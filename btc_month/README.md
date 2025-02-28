@@ -54,11 +54,10 @@ Change: +16.60% (up)
 ```
 ## Limitations
 Data is available only from July 2017 (Binance launch).
-
 Requires an internet connection.
 
 ## License
 This project is licensed under the MIT License (see the LICENSE file, if included).
 ## Author
-Created by gunkinmail. For questions or suggestions, please open an issue.
+Created by [mrgunkin](https://github.com/mrgunkin). For questions or suggestions, please open an issue.
 
