@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Data Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 1000px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="marketChart"></canvas>
+    <script>
+        // Функция загрузки и парсинга CSV
+        async function loadCSV() {
+            const response = await fetch('market_data.csv');
+            const data = await response.text();
+            
+            // Разбиваем CSV на строки и убираем заголовок
+            const rows = data.trim().split('\n').slice(1);
+            const dates = [];
+            const priceBTC = [];
+            const fearIndex = [];
+            const openInterest = [];
+
+            rows.forEach(row => {
+                if (row) {
+                    const [date, price, fear, oi] = row.split(',');
+                    dates.push(date.replace(/"/g, '')); // Убираем кавычки из даты
+                    priceBTC.push(parseFloat(price.replace(/"/g, '').replace(',', '')));
+                    fearIndex.push(parseFloat(fear.replace(/"/g, '')));
+                    openInterest.push(parseFloat(oi.replace(/"/g, '').replace(',', '')));
+                }
+            });
+
+            return { dates, priceBTC, fearIndex, openInterest };
+        }
+
+        // Создание графика
+        async function createChart() {
+            const data = await loadCSV();
+
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [
+                        {
+                            label: 'Price BTC',
+                            data: data.priceBTC,
+                            borderColor: 'blue',
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Fear Index',
+                            data: data.fearIndex,
+                            borderColor: 'red',
+                            yAxisID: 'y2'
+                        },
+                        {
+                            label: 'Open Interest',
+                            data: data.openInterest,
+                            borderColor: 'green',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Date' } },
+                        y1: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Price BTC / Open Interest' }
+                        },
+                        y2: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Fear Index' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: { legend: { display: true } }
+                }
+            });
+        }
+
+        // Запускаем создание графика
+        createChart();
+    </script>
+</body>
+</html>
