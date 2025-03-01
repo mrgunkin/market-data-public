@@ -15,12 +15,10 @@
 <body>
     <canvas id="marketChart"></canvas>
     <script>
-        // Функция загрузки и парсинга CSV
         async function loadCSV() {
             const response = await fetch('market_data.csv');
             const data = await response.text();
             
-            // Разбиваем CSV на строки и убираем заголовок
             const rows = data.trim().split('\n').slice(1);
             const dates = [];
             const priceBTC = [];
@@ -40,7 +38,6 @@
             return { dates, priceBTC, fearIndex, openInterest };
         }
 
-        // Создание графика
         async function createChart() {
             const data = await loadCSV();
 
@@ -91,7 +88,6 @@
             });
         }
 
-        // Запускаем создание графика
         createChart();
     </script>
 </body>
