@@ -15,11 +15,13 @@
 <body>
     <canvas id="marketChart"></canvas>
     <script>
-        async function loadCSV() {
-            const response = await fetch('market_data.csv');
-            const data = await response.text();
+        function parseData() {
+            const csvData = `Date,PriceBTC,FearIndex,OpenInterest,Long,Short
+"01.03.2025","84,509.1","20","78,947.45","64","36"
+"02.03.2025","86,025.1","26","78,477.4","63","37"
+"03.03.2025","92,963.5","33","79,049.4","56","44"`;
             
-            const rows = data.trim().split('\n').slice(1);
+            const rows = csvData.trim().split('\n').slice(1);
             const dates = [];
             const priceBTC = [];
             const fearIndex = [];
@@ -27,8 +29,8 @@
 
             rows.forEach(row => {
                 if (row) {
-                    const [date, price, fear, oi] = row.split(',');
-                    dates.push(date.replace(/"/g, '')); // Убираем кавычки из даты
+                    const [date, price, fear, oi, long, short] = row.split(',');
+                    dates.push(date.replace(/"/g, ''));
                     priceBTC.push(parseFloat(price.replace(/"/g, '').replace(',', '')));
                     fearIndex.push(parseFloat(fear.replace(/"/g, '')));
                     openInterest.push(parseFloat(oi.replace(/"/g, '').replace(',', '')));
@@ -38,8 +40,8 @@
             return { dates, priceBTC, fearIndex, openInterest };
         }
 
-        async function createChart() {
-            const data = await loadCSV();
+        function createChart() {
+            const data = parseData();
 
             const ctx = document.getElementById('marketChart').getContext('2d');
             new Chart(ctx, {
@@ -70,20 +72,37 @@
                 options: {
                     responsive: true,
                     scales: {
-                        x: { title: { display: true, text: 'Date' } },
+                        x: { 
+                            title: { 
+                                display: true, 
+                                text: 'Date' 
+                            } 
+                        },
                         y1: {
                             type: 'linear',
                             position: 'left',
-                            title: { display: true, text: 'Price BTC / Open Interest' }
+                            title: { 
+                                display: true, 
+                                text: 'Price BTC / Open Interest' 
+                            }
                         },
                         y2: {
                             type: 'linear',
                             position: 'right',
-                            title: { display: true, text: 'Fear Index' },
-                            grid: { drawOnChartArea: false }
+                            title: { 
+                                display: true, 
+                                text: 'Fear Index' 
+                            },
+                            grid: { 
+                                drawOnChartArea: false 
+                            }
                         }
                     },
-                    plugins: { legend: { display: true } }
+                    plugins: { 
+                        legend: { 
+                            display: true 
+                        } 
+                    }
                 }
             });
         }
