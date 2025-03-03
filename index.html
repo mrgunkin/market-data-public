@@ -15,33 +15,35 @@
 <body>
     <canvas id="marketChart"></canvas>
     <script>
-        function parseData() {
-            const csvData = `Date,PriceBTC,FearIndex,OpenInterest,Long,Short
-"01.03.2025","84,509.1","20","78,947.45","64","36"
-"02.03.2025","86,025.1","26","78,477.4","63","37"
-"03.03.2025","92,963.5","33","79,049.4","56","44"`;
+        async function loadCSV() {
+            const response = await fetch('market_data.csv');
+            const data = await response.text();
             
-            const rows = csvData.trim().split('\n').slice(1);
+            const rows = data.trim().split('\n').slice(1);
             const dates = [];
             const priceBTC = [];
             const fearIndex = [];
             const openInterest = [];
+            const long = [];
+            const short = [];
 
             rows.forEach(row => {
                 if (row) {
-                    const [date, price, fear, oi, long, short] = row.split(',');
+                    const [date, price, fear, oi, lng, shrt] = row.split(',');
                     dates.push(date.replace(/"/g, ''));
                     priceBTC.push(parseFloat(price.replace(/"/g, '').replace(',', '')));
                     fearIndex.push(parseFloat(fear.replace(/"/g, '')));
                     openInterest.push(parseFloat(oi.replace(/"/g, '').replace(',', '')));
+                    long.push(parseFloat(lng.replace(/"/g, '')));
+                    short.push(parseFloat(shrt.replace(/"/g, '')));
                 }
             });
 
-            return { dates, priceBTC, fearIndex, openInterest };
+            return { dates, priceBTC, fearIndex, openInterest, long, short };
         }
 
-        function createChart() {
-            const data = parseData();
+        async function createChart() {
+            const data = await loadCSV();
 
             const ctx = document.getElementById('marketChart').getContext('2d');
             new Chart(ctx, {
@@ -66,6 +68,18 @@
                             data: data.openInterest,
                             borderColor: 'green',
                             yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Long %',
+                            data: data.long,
+                            borderColor: 'purple',
+                            yAxisID: 'y2'
+                        },
+                        {
+                            label: 'Short %',
+                            data: data.short,
+                            borderColor: 'orange',
+                            yAxisID: 'y2'
                         }
                     ]
                 },
@@ -91,7 +105,7 @@
                             position: 'right',
                             title: { 
                                 display: true, 
-                                text: 'Fear Index' 
+                                text: 'Fear Index / Long / Short (%)' 
                             },
                             grid: { 
                                 drawOnChartArea: false 
