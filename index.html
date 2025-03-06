@@ -22,24 +22,18 @@
             const rows = data.trim().split('\n').slice(1);
             const dates = [];
             const priceBTC = [];
-            const fearIndex = [];
             const openInterest = [];
-            const long = [];
-            const short = [];
 
             rows.forEach(row => {
                 if (row) {
-                    const [date, price, fear, oi, lng, shrt] = row.split(',');
+                    const [date, price, , oi] = row.split(',');
                     dates.push(date.replace(/"/g, ''));
                     priceBTC.push(parseFloat(price.replace(/"/g, '').replace(',', '')));
-                    fearIndex.push(parseFloat(fear.replace(/"/g, '')));
                     openInterest.push(parseFloat(oi.replace(/"/g, '').replace(',', '')));
-                    long.push(parseFloat(lng.replace(/"/g, '')));
-                    short.push(parseFloat(shrt.replace(/"/g, '')));
                 }
             });
 
-            return { dates, priceBTC, fearIndex, openInterest, long, short };
+            return { dates, priceBTC, openInterest };
         }
 
         async function createChart() {
@@ -55,31 +49,13 @@
                             label: 'Price BTC',
                             data: data.priceBTC,
                             borderColor: 'blue',
-                            yAxisID: 'y1'
-                        },
-                        {
-                            label: 'Fear Index',
-                            data: data.fearIndex,
-                            borderColor: 'red',
-                            yAxisID: 'y2'
+                            yAxisID: 'y'
                         },
                         {
                             label: 'Open Interest',
                             data: data.openInterest,
                             borderColor: 'green',
-                            yAxisID: 'y1'
-                        },
-                        {
-                            label: 'Long %',
-                            data: data.long,
-                            borderColor: 'purple',
-                            yAxisID: 'y2'
-                        },
-                        {
-                            label: 'Short %',
-                            data: data.short,
-                            borderColor: 'orange',
-                            yAxisID: 'y2'
+                            yAxisID: 'y'
                         }
                     ]
                 },
@@ -92,23 +68,12 @@
                                 text: 'Date' 
                             } 
                         },
-                        y1: {
+                        y: {
                             type: 'linear',
                             position: 'left',
                             title: { 
                                 display: true, 
                                 text: 'Price BTC / Open Interest' 
-                            }
-                        },
-                        y2: {
-                            type: 'linear',
-                            position: 'right',
-                            title: { 
-                                display: true, 
-                                text: 'Fear Index / Long / Short (%)' 
-                            },
-                            grid: { 
-                                drawOnChartArea: false 
                             }
                         }
                     },
