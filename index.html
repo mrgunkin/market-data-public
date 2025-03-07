@@ -8,25 +8,32 @@
 </head>
 <body>
     <h2>BTC Market Trends: Price vs Open Interest</h2>
-    <svg width="800" height="500"></svg>
+    <svg id="chart" width="800" height="500"></svg>
 
     <script>
         // Размеры графика
         const width = 800, height = 500, margin = { top: 50, right: 60, bottom: 50, left: 60 };
 
         // Создаём SVG контейнер
-        const svg = d3.select("svg")
+        const svg = d3.select("#chart")
             .attr("width", width)
             .attr("height", height);
 
         // Загружаем CSV
         d3.csv("market_data.csv").then(data => {
+            if (!data || data.length === 0) {
+                console.error("Ошибка: Данные не загружены!");
+                return;
+            }
+
             // Парсим данные: убираем запятые, конвертируем числа
-            data.forEach(d => {
-                d.Date = d.Date.replace(/"/g, ''); // Убираем кавычки
-                d.PriceBTC = +d.PriceBTC.replace(/,/g, ''); // Парсим цену BTC
-                d.OpenInterest = +d.OpenInterest.replace(/,/g, ''); // Парсим Open Interest
-            });
+            data = data.map(d => ({
+                Date: d.Date.replace(/"/g, ''), // Убираем кавычки
+                PriceBTC: parseFloat(d.PriceBTC.replace(/,/g, '')), // Парсим цену BTC
+                OpenInterest: parseFloat(d.OpenInterest.replace(/,/g, '')) // Парсим Open Interest
+            }));
+
+            console.log("Parsed Data:", data);
 
             // Создаём оси
             const xScale = d3.scaleBand()
@@ -49,11 +56,21 @@
 
             svg.append("g")
                 .attr("transform", `translate(${margin.left},0)`)
-                .call(d3.axisLeft(yScaleLeft).ticks(6).tickFormat(d3.format(",")));
+                .call(d3.axisLeft(yScaleLeft).ticks(6).tickFormat(d3.format(",")))
+                .append("text")
+                .attr("x", -margin.left + 10)
+                .attr("y", margin.top - 20)
+                .attr("fill", "blue")
+                .text("Price BTC ($)");
 
             svg.append("g")
                 .attr("transform", `translate(${width - margin.right},0)`)
-                .call(d3.axisRight(yScaleRight).ticks(6).tickFormat(d3.format(",")));
+                .call(d3.axisRight(yScaleRight).ticks(6).tickFormat(d3.format(",")))
+                .append("text")
+                .attr("x", margin.right - 10)
+                .attr("y", margin.top - 20)
+                .attr("fill", "green")
+                .text("Open Interest");
 
             // Линия цены BTC
             const linePrice = d3.line()
@@ -78,6 +95,8 @@
                 .attr("stroke", "green")
                 .attr("stroke-width", 2)
                 .attr("d", lineOI);
+        }).catch(error => {
+            console.error("Ошибка загрузки CSV:", error);
         });
     </script>
 </body>
