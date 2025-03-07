@@ -129,6 +129,11 @@
                     displayModeBar: true
                 };
 
+console.log("Dates:", dates);
+console.log("Price BTC:", priceBTC);
+console.log("Open Interest:", openInterest);
+
+                
                 Plotly.newPlot('marketChart', [trace1, trace2], layout, config);
             } catch (error) {
                 console.error('Error creating chart:', error);
