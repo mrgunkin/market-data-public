@@ -28,8 +28,9 @@
                 if (row) {
                     const [date, price, , oi] = row.split(',');
                     dates.push(date.replace(/"/g, ''));
-                    priceBTC.push(parseFloat(price.replace(/"/g, '').replace(',', '')));
-                    openInterest.push(parseFloat(oi.replace(/"/g, '').replace(',', '')));
+                    // Улучшенная обработка чисел с запятыми в качестве разделителей тысяч
+                    priceBTC.push(parseFloat(price.replace(/"/g, '').replace(/,/g, '')));
+                    openInterest.push(parseFloat(oi.replace(/"/g, '').replace(/,/g, '')));
                 }
             });
 
@@ -49,13 +50,15 @@
                             label: 'Price BTC',
                             data: data.priceBTC,
                             borderColor: 'blue',
-                            yAxisID: 'y'
+                            yAxisID: 'y1',
+                            tension: 0.1
                         },
                         {
                             label: 'Open Interest',
                             data: data.openInterest,
                             borderColor: 'green',
-                            yAxisID: 'y'
+                            yAxisID: 'y2',
+                            tension: 0.1
                         }
                     ]
                 },
@@ -68,12 +71,25 @@
                                 text: 'Date' 
                             } 
                         },
-                        y: {
+                        y1: {
                             type: 'linear',
                             position: 'left',
                             title: { 
                                 display: true, 
-                                text: 'Price BTC / Open Interest' 
+                                text: 'Price BTC ($)' 
+                            },
+                            beginAtZero: false
+                        },
+                        y2: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { 
+                                display: true, 
+                                text: 'Open Interest' 
+                            },
+                            beginAtZero: false,
+                            grid: {
+                                drawOnChartArea: false // Убирает наложение сеток
                             }
                         }
                     },
@@ -86,7 +102,7 @@
             });
         }
 
-        createChart();
+        createChart().catch(error => console.error('Error creating chart:', error));
     </script>
 </body>
 </html>
