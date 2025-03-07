@@ -7,8 +7,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         canvas {
-            max-width: 1000px;
-            margin: 20px auto;
+            max-width: 1200px; /* Увеличим ширину графика */
+            margin: 40px auto; /* Больше отступов */
+            background-color: #f9f9f9; /* Светлый фон */
+            border-radius: 10px; /* Скруглённые углы */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Тень для объёма */
+        }
+        body {
+            background-color: #f0f0f0; /* Цвет фона страницы */
+            font-family: Arial, sans-serif; /* Шрифт для всего текста */
         }
     </style>
 </head>
@@ -26,11 +33,10 @@
 
             rows.forEach(row => {
                 if (row) {
-                    // Разделяем по запятой, учитывая кавычки
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    dates.push(cols[0].replace(/"/g, '')); // Первый столбец - Date
-                    priceBTC.push(parseFloat(cols[1].replace(/"/g, '').replace(',', ''))); // Второй столбец - PriceBTC
-                    openInterest.push(parseFloat(cols[3].replace(/"/g, '').replace(',', ''))); // Четвёртый столбец - OpenInterest
+                    dates.push(cols[0].replace(/"/g, ''));
+                    priceBTC.push(parseFloat(cols[1].replace(/"/g, '').replace(',', '')));
+                    openInterest.push(parseFloat(cols[3].replace(/"/g, '').replace(',', '')));
                 }
             });
 
@@ -47,56 +53,115 @@
                     labels: data.dates,
                     datasets: [
                         {
-                            label: 'Price BTC',
+                            label: 'Price BTC ($)',
                             data: data.priceBTC,
-                            borderColor: 'blue',
-                            yAxisID: 'y1',
-                            tension: 0.1
+                            borderColor: '#1E90FF', // Яркий синий
+                            backgroundColor: 'rgba(30, 144, 255, 0.2)', // Полупрозрачный фон под точками
+                            borderWidth: 3, // Толще линия
+                            pointRadius: 5, // Точки на линии
+                            pointBackgroundColor: '#1E90FF',
+                            tension: 0.2, // Более плавные изгибы
+                            fill: false
                         },
                         {
                             label: 'Open Interest',
                             data: data.openInterest,
-                            borderColor: 'green',
-                            yAxisID: 'y2',
-                            tension: 0.1
+                            borderColor: '#32CD32', // Яркий зелёный
+                            backgroundColor: 'rgba(50, 205, 50, 0.2)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#32CD32',
+                            tension: 0.2,
+                            fill: false
                         }
                     ]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false, // Позволяет лучше растягиваться
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 16 // Больше шрифт легенды
+                                },
+                                padding: 20
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'BTC Market Trends: Price vs Open Interest',
+                            font: {
+                                size: 24 // Большой заголовок
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 30
+                            }
+                        }
+                    },
                     scales: {
-                        x: { 
-                            title: { 
-                                display: true, 
-                                text: 'Date' 
-                            } 
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                font: {
+                                    size: 18 // Больше шрифт подписи оси
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 14 // Больше шрифт меток
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)' // Лёгкая сетка
+                            }
                         },
                         y1: {
                             type: 'linear',
                             position: 'left',
-                            title: { 
-                                display: true, 
-                                text: 'Price BTC ($)' 
+                            title: {
+                                display: true,
+                                text: 'Price BTC ($)',
+                                font: {
+                                    size: 18
+                                }
                             },
-                            beginAtZero: false
+                            ticks: {
+                                font: {
+                                    size: 14
+                                },
+                                callback: value => value.toLocaleString() // Форматирование чисел с разделителями
+                            },
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
                         },
                         y2: {
                             type: 'linear',
                             position: 'right',
-                            title: { 
-                                display: true, 
-                                text: 'Open Interest' 
+                            title: {
+                                display: true,
+                                text: 'Open Interest',
+                                font: {
+                                    size: 18
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 14
+                                },
+                                callback: value => value.toLocaleString()
                             },
                             beginAtZero: false,
                             grid: {
-                                drawOnChartArea: false
+                                drawOnChartArea: false // Убираем наложение сеток
                             }
                         }
-                    },
-                    plugins: { 
-                        legend: { 
-                            display: true 
-                        } 
                     }
                 }
             });
