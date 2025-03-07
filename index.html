@@ -79,14 +79,14 @@
                     name: 'Open Interest',
                     line: { color: '#32CD32', width: 3 },
                     marker: { size: 8 },
-                    yaxis: 'y2' // Вторая ось Y
+                    yaxis: 'y2'
                 };
 
                 const layout = {
                     title: {
                         text: 'BTC Market Trends: Price vs Open Interest',
                         font: { size: 24 },
-                        x: 0.5, // Центрируем заголовок
+                        x: 0.5,
                         xanchor: 'center'
                     },
                     xaxis: {
@@ -97,13 +97,13 @@
                     yaxis: {
                         title: { text: 'Price BTC ($)', font: { size: 18 } },
                         tickfont: { size: 14 },
-                        tickformat: ',.0f', // Форматирование чисел с разделителями
+                        tickformat: ',.1f', // Отображение одного десятичного знака
                         gridcolor: 'rgba(0, 0, 0, 0.1)'
                     },
                     yaxis2: {
                         title: { text: 'Open Interest', font: { size: 18 } },
                         tickfont: { size: 14 },
-                        tickformat: ',.0f',
+                        tickformat: ',.2f', // Отображение двух десятичных знаков для OpenInterest
                         overlaying: 'y',
                         side: 'right'
                     },
@@ -118,12 +118,12 @@
                     plot_bgcolor: '#f9f9f9',
                     paper_bgcolor: '#f9f9f9',
                     showlegend: true,
-                    hovermode: 'x unified' // Удобный ховер
+                    hovermode: 'x unified'
                 };
 
                 const config = {
                     responsive: true,
-                    displayModeBar: true // Показываем панель инструментов
+                    displayModeBar: true
                 };
 
                 Plotly.newPlot('marketChart', [trace1, trace2], layout, config);
