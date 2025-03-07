@@ -56,7 +56,7 @@
         async function createChart() {
             const data = await loadCSV();
             if (!data) return;
-            
+            console.log(data.openInterest); // Выведет массив значений Open Interest в консоль
             const trace1 = {
                 x: data.dates,
                 y: data.priceBTC,
