@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Data Graph</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             background-color: #f0f0f0;
@@ -15,7 +15,7 @@
         #marketChart {
             max-width: 1200px;
             width: 100%;
-            height: 600px; /* Фиксированная высота для стабильности */
+            height: 600px;
             margin: 40px auto;
             background-color: #f9f9f9;
             border-radius: 10px;
@@ -24,12 +24,12 @@
     </style>
 </head>
 <body>
-    <canvas id="marketChart"></canvas>
+    <div id="marketChart"></div>
     <script>
         async function loadCSV() {
             try {
                 const response = await fetch('market_data.csv', {
-                    cache: 'no-store' // Отключаем кэш для свежих данных
+                    cache: 'no-store'
                 });
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -58,121 +58,80 @@
         }
 
         async function createChart() {
-            const canvas = document.getElementById('marketChart');
-            if (!canvas) {
-                console.error('Canvas element not found');
-                return;
-            }
-
             try {
                 const data = await loadCSV();
-                const ctx = canvas.getContext('2d');
 
-                // Уничтожаем предыдущий график, если он есть
-                if (window.myChart instanceof Chart) {
-                    window.myChart.destroy();
-                }
+                const trace1 = {
+                    x: data.dates,
+                    y: data.priceBTC,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Price BTC ($)',
+                    line: { color: '#1E90FF', width: 3 },
+                    marker: { size: 8 }
+                };
 
-                window.myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.dates,
-                        datasets: [
-                            {
-                                label: 'Price BTC ($)',
-                                data: data.priceBTC,
-                                borderColor: '#1E90FF',
-                                backgroundColor: 'rgba(30, 144, 255, 0.2)',
-                                borderWidth: 3,
-                                pointRadius: 5,
-                                pointBackgroundColor: '#1E90FF',
-                                tension: 0.2,
-                                fill: false
-                            },
-                            {
-                                label: 'Open Interest',
-                                data: data.openInterest,
-                                borderColor: '#32CD32',
-                                backgroundColor: 'rgba(50, 205, 50, 0.2)',
-                                borderWidth: 3,
-                                pointRadius: 5,
-                                pointBackgroundColor: '#32CD32',
-                                tension: 0.2,
-                                fill: false
-                            }
-                        ]
+                const trace2 = {
+                    x: data.dates,
+                    y: data.openInterest,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Open Interest',
+                    line: { color: '#32CD32', width: 3 },
+                    marker: { size: 8 },
+                    yaxis: 'y2' // Вторая ось Y
+                };
+
+                const layout = {
+                    title: {
+                        text: 'BTC Market Trends: Price vs Open Interest',
+                        font: { size: 24 },
+                        x: 0.5, // Центрируем заголовок
+                        xanchor: 'center'
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false, // Отключаем для фиксированной высоты
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: {
-                                    font: { size: 16 },
-                                    padding: 20
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'BTC Market Trends: Price vs Open Interest',
-                                font: { size: 24 },
-                                padding: { top: 10, bottom: 30 }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Date',
-                                    font: { size: 18 }
-                                },
-                                ticks: { font: { size: 14 } },
-                                grid: { color: 'rgba(0, 0, 0, 0.1)' }
-                            },
-                            y1: {
-                                type: 'linear',
-                                position: 'left',
-                                title: {
-                                    display: true,
-                                    text: 'Price BTC ($)',
-                                    font: { size: 18 }
-                                },
-                                ticks: {
-                                    font: { size: 14 },
-                                    callback: value => value.toLocaleString()
-                                },
-                                beginAtZero: false,
-                                grid: { color: 'rgba(0, 0, 0, 0.1)' }
-                            },
-                            y2: {
-                                type: 'linear',
-                                position: 'right',
-                                title: {
-                                    display: true,
-                                    text: 'Open Interest',
-                                    font: { size: 18 }
-                                },
-                                ticks: {
-                                    font: { size: 14 },
-                                    callback: value => value.toLocaleString()
-                                },
-                                beginAtZero: false,
-                                grid: { drawOnChartArea: false }
-                            }
-                        },
-                        animation: {
-                            duration: 0 // Отключаем анимацию для предотвращения мельтешения
-                        }
-                    }
-                });
+                    xaxis: {
+                        title: { text: 'Date', font: { size: 18 } },
+                        tickfont: { size: 14 },
+                        gridcolor: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    yaxis: {
+                        title: { text: 'Price BTC ($)', font: { size: 18 } },
+                        tickfont: { size: 14 },
+                        tickformat: ',.0f', // Форматирование чисел с разделителями
+                        gridcolor: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    yaxis2: {
+                        title: { text: 'Open Interest', font: { size: 18 } },
+                        tickfont: { size: 14 },
+                        tickformat: ',.0f',
+                        overlaying: 'y',
+                        side: 'right'
+                    },
+                    legend: {
+                        x: 0.5,
+                        y: 1.1,
+                        xanchor: 'center',
+                        orientation: 'h',
+                        font: { size: 16 }
+                    },
+                    margin: { t: 100, b: 100, l: 100, r: 100 },
+                    plot_bgcolor: '#f9f9f9',
+                    paper_bgcolor: '#f9f9f9',
+                    showlegend: true,
+                    hovermode: 'x unified' // Удобный ховер
+                };
+
+                const config = {
+                    responsive: true,
+                    displayModeBar: true // Показываем панель инструментов
+                };
+
+                Plotly.newPlot('marketChart', [trace1, trace2], layout, config);
             } catch (error) {
                 console.error('Error creating chart:', error);
             }
         }
 
-        // Запускаем создание графика после полной загрузки страницы
         window.addEventListener('load', () => {
             createChart();
         });
