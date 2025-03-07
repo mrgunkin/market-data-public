@@ -11,31 +11,24 @@
     <svg id="chart" width="800" height="500"></svg>
 
     <script>
-        // Размеры графика
-        const width = 800, height = 500, margin = { top: 50, right: 60, bottom: 50, left: 60 };
+        const width = 800, height = 500, margin = { top: 50, right: 80, bottom: 50, left: 80 };
 
-        // Создаём SVG контейнер
         const svg = d3.select("#chart")
             .attr("width", width)
             .attr("height", height);
 
-        // Загружаем CSV
         d3.csv("market_data.csv").then(data => {
             if (!data || data.length === 0) {
                 console.error("Ошибка: Данные не загружены!");
                 return;
             }
 
-            // Парсим данные: убираем запятые, конвертируем числа
             data = data.map(d => ({
-                Date: d.Date.replace(/"/g, ''), // Убираем кавычки
-                PriceBTC: parseFloat(d.PriceBTC.replace(/,/g, '')), // Парсим цену BTC
-                OpenInterest: parseFloat(d.OpenInterest.replace(/,/g, '')) // Парсим Open Interest
+                Date: d.Date.replace(/"/g, ''),
+                PriceBTC: parseFloat(d.PriceBTC.replace(/,/g, '')),
+                OpenInterest: parseFloat(d.OpenInterest.replace(/,/g, ''))
             }));
 
-            console.log("Parsed Data:", data);
-
-            // Создаём оси
             const xScale = d3.scaleBand()
                 .domain(data.map(d => d.Date))
                 .range([margin.left, width - margin.right])
@@ -49,30 +42,40 @@
                 .domain([d3.min(data, d => d.OpenInterest) * 0.95, d3.max(data, d => d.OpenInterest) * 1.05])
                 .range([height - margin.bottom, margin.top]);
 
-            // Оси
             svg.append("g")
                 .attr("transform", `translate(0,${height - margin.bottom})`)
-                .call(d3.axisBottom(xScale));
+                .call(d3.axisBottom(xScale).tickSize(6))
+                .selectAll("text")
+                .style("font-size", "14px");
 
             svg.append("g")
                 .attr("transform", `translate(${margin.left},0)`)
                 .call(d3.axisLeft(yScaleLeft).ticks(6).tickFormat(d3.format(",")))
-                .append("text")
-                .attr("x", -margin.left + 10)
-                .attr("y", margin.top - 20)
-                .attr("fill", "blue")
-                .text("Price BTC ($)");
+                .selectAll("text")
+                .style("font-size", "14px");
 
             svg.append("g")
                 .attr("transform", `translate(${width - margin.right},0)`)
                 .call(d3.axisRight(yScaleRight).ticks(6).tickFormat(d3.format(",")))
-                .append("text")
-                .attr("x", margin.right - 10)
-                .attr("y", margin.top - 20)
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            svg.append("text")
+                .attr("x", margin.left - 50)
+                .attr("y", margin.top - 10)
+                .attr("fill", "blue")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
+                .text("Price BTC ($)");
+
+            svg.append("text")
+                .attr("x", width - margin.right + 20)
+                .attr("y", margin.top - 10)
                 .attr("fill", "green")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
                 .text("Open Interest");
 
-            // Линия цены BTC
             const linePrice = d3.line()
                 .x(d => xScale(d.Date) + xScale.bandwidth() / 2)
                 .y(d => yScaleLeft(d.PriceBTC));
@@ -84,7 +87,6 @@
                 .attr("stroke-width", 2)
                 .attr("d", linePrice);
 
-            // Линия Open Interest
             const lineOI = d3.line()
                 .x(d => xScale(d.Date) + xScale.bandwidth() / 2)
                 .y(d => yScaleRight(d.OpenInterest));
