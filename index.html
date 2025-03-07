@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Data Graph</title>
-    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             background-color: #f0f0f0;
@@ -17,9 +17,9 @@
             width: 100%;
             height: 600px;
             margin: 40px auto;
-            background-color: #fff;
+            background-color: #f9f9f9;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -29,74 +29,115 @@
         async function loadCSV() {
             try {
                 const response = await fetch('market_data.csv', { cache: 'no-store' });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 const data = await response.text();
+                
                 const rows = data.trim().split('\n').slice(1);
-                const dates = [], priceBTC = [], openInterest = [];
+                const dates = [];
+                const priceBTC = [];
+                const openInterest = [];
 
                 rows.forEach(row => {
-                    if (!row) return;
-                    const cols = row.match(/(?:"[^"]*")|[^,]+/g).map(col => col.replace(/"/g, '').trim());
-                    
-                    if (cols.length >= 4) {
-                        dates.push(cols[0]);
-                        priceBTC.push(parseFloat(cols[1].replace(',', '')) || null);
-                        openInterest.push(parseFloat(cols[3].replace(',', '')) || null);
+                    if (row) {
+                        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        dates.push(cols[0].replace(/"/g, ''));
+                        priceBTC.push(parseFloat(cols[1].replace(/"/g, '').replace(/,/g, '')));
+                        openInterest.push(parseFloat(cols[3].replace(/"/g, '').replace(/,/g, '')));
                     }
                 });
+
+                console.log("Parsed Dates:", dates);
+                console.log("Parsed Price BTC:", priceBTC);
+                console.log("Parsed Open Interest:", openInterest);
 
                 return { dates, priceBTC, openInterest };
             } catch (error) {
                 console.error('Error loading CSV:', error);
-                return null;
+                throw error;
             }
         }
 
         async function createChart() {
-            const data = await loadCSV();
-            if (!data) return;
-            console.log(data.openInterest); // Выведет массив значений Open Interest в консоль
-            const trace1 = {
-                x: data.dates,
-                y: data.priceBTC,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Price BTC ($)',
-                line: { color: '#1E90FF', width: 3 },
-                marker: { size: 8 },
-                connectgaps: true
-            };
+            try {
+                const data = await loadCSV();
 
-            const trace2 = {
-                x: data.dates,
-                y: data.openInterest,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Open Interest',
-                line: { color: '#32CD32', width: 3 },
-                marker: { size: 8 },
-                yaxis: 'y2',
-                connectgaps: true
-            };
+                const trace1 = {
+                    x: data.dates,
+                    y: data.priceBTC,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Price BTC ($)',
+                    line: { color: '#1E90FF', width: 3 },
+                    marker: { size: 8 }
+                };
 
-            const layout = {
-                title: { text: 'BTC Market Trends: Price vs Open Interest', font: { size: 24 }, x: 0.5 },
-                xaxis: { title: 'Date', tickfont: { size: 14 }, gridcolor: 'rgba(0, 0, 0, 0.1)' },
-                yaxis: { title: 'Price BTC ($)', tickformat: ',.1f', gridcolor: 'rgba(0, 0, 0, 0.1)' },
-                yaxis2: { title: 'Open Interest', tickformat: ',.2f', overlaying: 'y', side: 'right' },
-                legend: { x: 0.5, y: 1.1, xanchor: 'center', orientation: 'h' },
-                margin: { t: 80, b: 80, l: 80, r: 80 },
-                plot_bgcolor: '#fff',
-                paper_bgcolor: '#fff',
-                hovermode: 'x unified'
-            };
+                const trace2 = {
+                    x: data.dates,
+                    y: data.openInterest,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Open Interest',
+                    line: { color: '#32CD32', width: 3 },
+                    marker: { size: 8 },
+                    yaxis: 'y2'
+                };
 
-            const config = { responsive: true, displayModeBar: true };
-            Plotly.newPlot('marketChart', [trace1, trace2], layout, config);
+                const layout = {
+                    title: {
+                        text: 'BTC Market Trends: Price vs Open Interest',
+                        font: { size: 24 },
+                        x: 0.5,
+                        xanchor: 'center'
+                    },
+                    xaxis: {
+                        title: { text: 'Date', font: { size: 18 } },
+                        tickfont: { size: 14 },
+                        gridcolor: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    yaxis: {
+                        title: { text: 'Price BTC ($)', font: { size: 18 } },
+                        tickfont: { size: 14 },
+                        tickformat: ',.1f',
+                        gridcolor: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    yaxis2: {
+                        title: { text: 'Open Interest', font: { size: 18 } },
+                        tickfont: { size: 14 },
+                        tickformat: ',.2f',
+                        overlaying: 'y',
+                        side: 'right',
+                        range: [Math.min(...data.openInterest) * 0.9, Math.max(...data.openInterest) * 1.1] // Исправленный диапазон
+                    },
+                    legend: {
+                        x: 0.5,
+                        y: 1.1,
+                        xanchor: 'center',
+                        orientation: 'h',
+                        font: { size: 16 }
+                    },
+                    margin: { t: 100, b: 100, l: 100, r: 100 },
+                    plot_bgcolor: '#f9f9f9',
+                    paper_bgcolor: '#f9f9f9',
+                    showlegend: true,
+                    hovermode: 'x unified'
+                };
+
+                const config = {
+                    responsive: true,
+                    displayModeBar: true
+                };
+
+                Plotly.newPlot('marketChart', [trace1, trace2], layout, config);
+            } catch (error) {
+                console.error('Error creating chart:', error);
+            }
         }
 
-        window.addEventListener('load', createChart);
+        window.addEventListener('load', () => {
+            createChart();
+        });
     </script>
 </body>
 </html>
